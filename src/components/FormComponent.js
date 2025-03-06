@@ -6,6 +6,8 @@ import { Button, TextField, Box, Typography, CircularProgress } from '@mui/mater
 
 const FormComponent = () => {
   const [mailSent,setMailSent] = useState(false);
+  // const [newUser, setNewUser] = useState(false);
+  let newUser = false;
   const location = useLocation();
   const [title, setTitle] = useState('');
   const [formData, setFormData] = useState({
@@ -99,12 +101,16 @@ const FormComponent = () => {
             ...formData,
             CreatedAt: new Date()
           });
+
+          // setNewUser(true);
+          newUser = true;
+          console.log(newUser);
         }
         
 
         return accessCode;
       }).then(async (accessCode) => {
-        if(!mailSent){
+        if(newUser){
           const response = await fetch('https://prod-51.westeurope.logic.azure.com:443/workflows/6254a6918699438494d16d7d36258496/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=8NrImwR370OkhjiJgq9Ml1JiXNbbt65j4iZF8ABnhJo', {
             method: 'POST',
             headers: {
@@ -118,33 +124,64 @@ const FormComponent = () => {
           if (!response.ok) {
             throw new Error('Failed to trigger Power Automate flow');
           }
+          alert(`New User Registered Successfully! Access Code: ${accessCode}`);
+          setFormData({
+            email: '',
+            username: '',
+            school: '',
+            city: ''
+          });
+        } else {
+          const newResponse = await fetch("https://prod-155.westeurope.logic.azure.com:443/workflows/c1ee2f35ff714730804e6c93d0b32f37/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=D78CcSe1GGPUYDFhRI0xjN7c0uz2sA_tLXo1v277iZo", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              email: formData.email,
+              accessCode: accessCode
+            })
+          });
+  
+          if (!newResponse.ok) {
+            throw new Error('Failed to trigger Power Automate flow');
+  
+          }
           setMailSent(true);
+          alert(`Access granted! Your code: ${accessCode}`);
+          setFormData({
+            email: '',
+            username: '',
+            school: '',
+            city: ''
+          });
         }
-
-        const newResponse = await fetch("https://prod-155.westeurope.logic.azure.com:443/workflows/c1ee2f35ff714730804e6c93d0b32f37/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=D78CcSe1GGPUYDFhRI0xjN7c0uz2sA_tLXo1v277iZo", {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email: formData.email,
-            accessCode: accessCode
-          })
-        });
-
-        if (!newResponse.ok) {
-          throw new Error('Failed to trigger Power Automate flow');
-
-        }
-        setMailSent(true);
-
-        alert(`Access granted! Your code: ${accessCode}`);
-        setFormData({
-          email: '',
-          username: '',
-          school: '',
-          city: ''
-        });
+        // if(!newUser){
+        //   const newResponse = await fetch("https://prod-155.westeurope.logic.azure.com:443/workflows/c1ee2f35ff714730804e6c93d0b32f37/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=D78CcSe1GGPUYDFhRI0xjN7c0uz2sA_tLXo1v277iZo", {
+        //     method: 'POST',
+        //     headers: {
+        //       'Content-Type': 'application/json'
+        //     },
+        //     body: JSON.stringify({
+        //       email: formData.email,
+        //       accessCode: accessCode
+        //     })
+        //   });
+  
+        //   if (!newResponse.ok) {
+        //     throw new Error('Failed to trigger Power Automate flow');
+  
+        //   }
+        //   setMailSent(true);
+        //   alert(`Access granted! Your code: ${accessCode}`);
+        //   setFormData({
+        //     email: '',
+        //     username: '',
+        //     school: '',
+        //     city: ''
+        //   });
+        // }
+        
         setSubmitted(true);
         setTimeout(() => setSubmitted(false), 3000);
       }).catch((error) => {
