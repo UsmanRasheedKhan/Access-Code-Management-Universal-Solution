@@ -49,6 +49,10 @@ const FormComponent = () => {
         );
         const existingAccessSnapshot = await getDocs(existingAccessQuery);
 
+        // if (!existingAccessSnapshot.empty) {
+        //   const existingCode = existingAccessSnapshot.docs[0].data().AccessCode;
+        //   throw new Error(`You already have access to ${title}. Access Code: ${existingCode}`);
+        // }
         if (!existingAccessSnapshot.empty) {
           const existingCode = existingAccessSnapshot.docs[0].data().AccessCode;
           
